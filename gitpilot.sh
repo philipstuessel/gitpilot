@@ -1,5 +1,6 @@
 #!/bin/zsh
 
+
 gitpilot_check() {
     if [ ! -d "$(pwd)/.git" ]; then
         echo "${RED}.git folder not found${NC}"
@@ -13,9 +14,11 @@ gitpilot_check() {
 }
 
 gitpilot() {
+    local_folder="/Users/$USER/gitpilot/$2/"
+    
     if [[ "$1" == "v" || "$1" == "-v" ]]; then
         echo "${CYAN}GitPilot${NC}"
-        echo "${BOLD}v.0.2.1${NC}"
+        echo "${BOLD}v.0.2.2${NC}"
         echo "${YELLOW}JAP plugin${NC}"
     fi
     
@@ -24,7 +27,7 @@ gitpilot() {
 
         target_folder="/Users/$USER/gitpilot/$2/"
         temp_directory="/Users/$USER/gitpilot/$2/temp/"
-        ignore_file="$(pwd)/.gitpilot/gp.json"
+        GP="$(pwd)/.gitpilot/gp.json"
 
         if [ -d $target_folder ]; then
             rm -r $target_folder
@@ -33,16 +36,28 @@ gitpilot() {
         mkdir -p "$temp_directory"
         git checkout -b temp_branch "$commit_hash" > /dev/null 2>&1
         changed_files=$(git diff --name-only HEAD^)
+        
+        echo "Changed files:"
+        echo "${changed_files}"
 
-        if [ -f "$ignore_file" ]; then
-            ignore_list=$(cat "$ignore_file" | sed -n '/"ignore": \[/,/\]/p' | grep -v '"ignore"' | tr -d '[]," ' | xargs)
+        if [ -f "$GP" ]; then
+            ignore_list=$(cat "$GP" | sed -n '/"ignore": \[/,/\]/p' | grep -v '"ignore"' | tr -d '[]," ' | xargs)
             for ignore_item in $ignore_list; do
                 changed_files=$(echo "$changed_files" | grep -v "$ignore_item")
             done
+            
+            extra_list=$(cat "$GP" | sed -n '/"extra": \[/,/\]/p' | grep -v '"extra"' | tr -d '[]," ' | xargs)
+            current_path="$(pwd)"
+            if [[ ! $extra_item == "" ]]; then
+            for extra_item in $extra_list; do
+                relative_path="${extra_item#$current_path/}"
+                destination_folder="${local_folder}${relative_path%/*}"
+                mkdir -p "$destination_folder"
+                cp -r "$extra_item" "$destination_folder"
+                echo "- e $extra_item";
+            done
+            fi
         fi
-
-        echo "Changed files:"
-        echo "${changed_files}"
 
         echo "$changed_files" | tar czf "$temp_directory.tar.gz" --files-from -
         tar xzf "$temp_directory.tar.gz" -C "$temp_directory" > /dev/null 2>&1
@@ -63,13 +78,27 @@ gitpilot() {
         if [ -d $target_folder ]; then
             rm -r $target_folder
         fi
-
+        
+        extra_list=$(cat "$GP" | sed -n '/"extra": \[/,/\]/p' | grep -v '"extra"' | tr -d '[]," ' | xargs)
+        current_path="$(pwd)"
+        echo $extra_list
+        echo "---"
+        if [[ ! $extra_item == "" ]]; then
+            for extra_item in $extra_list; do
+                relative_path="${extra_item#$current_path/}"
+                destination_folder="${local_folder}${relative_path%/*}"
+                mkdir -p "$destination_folder"
+                cp -r "$extra_item" "$destination_folder"
+                echo "- e $extra_item";
+            done
+        fi
         mkdir -p "$temp_directory"
         git archive --format zip --output "$temp_directory.zip" "$commit_hash"
         unzip "$temp_directory.zip" -d "$temp_directory"
         cp -r "$temp_directory" "$target_folder"
         rm -rf "$temp_directory" "$temp_directory.zip"
         echo "${GREEN}Everything was provided${NC}"
+
     fi
 
     if [[ "$1" == "push" || "$1" == "push-all" ]]; then
@@ -86,8 +115,7 @@ gitpilot() {
         fi
 
         echo "${BLUE}reading gp.json${NC}"
-
-        local_folder="/Users/$USER/gitpilot/$2/"
+        
         username=$(cat "$(pwd)/.gitpilot/gp.json" | grep '"username"' | awk -F ': *' '{print $2}' | tr -d '," ')
         server_ip=$(cat "$(pwd)/.gitpilot/gp.json" | grep '"server_ip"' | awk -F ': *' '{print $2}' | tr -d '," ')
         target_directory_on_server=$(cat "$(pwd)/.gitpilot/gp.json" | grep '"target_directory_on_server"' | awk -F ': *' '{print $2}' | tr -d '," ')
@@ -100,3 +128,4 @@ gitpilot() {
         echo "${GREEN}Done${NC}"
     fi
 }
+                
