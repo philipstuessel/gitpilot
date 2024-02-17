@@ -1,6 +1,4 @@
 #!/bin/zsh
-
-
 gitpilot_check() {
     if [ ! -d "$(pwd)/.git" ]; then
         echo "${RED}.git folder not found${NC}"
@@ -18,7 +16,7 @@ gitpilot() {
     
     if [[ "$1" == "v" || "$1" == "-v" ]]; then
         echo "${CYAN}GitPilot${NC}"
-        echo "${BOLD}v.0.2.2${NC}"
+        echo "${BOLD}v.0.2.3${NC}"
         echo "${YELLOW}JAP plugin${NC}"
     fi
     
@@ -48,7 +46,7 @@ gitpilot() {
             
             extra_list=$(cat "$GP" | sed -n '/"extra": \[/,/\]/p' | grep -v '"extra"' | tr -d '[]," ' | xargs)
             current_path="$(pwd)"
-            if [[ ! $extra_item == "" ]]; then
+            if [[ ! $extra_list == "" ]]; then
             for extra_item in $extra_list; do
                 relative_path="${extra_item#$current_path/}"
                 destination_folder="${local_folder}${relative_path%/*}"
@@ -128,4 +126,3 @@ gitpilot() {
         echo "${GREEN}Done${NC}"
     fi
 }
-                
