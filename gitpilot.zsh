@@ -15,8 +15,8 @@ gitpilot() {
     local_folder="/Users/$USER/gitpilot/$2/"
     
     if [[ "$1" == "v" || "$1" == "-v" ]]; then
-        echo "${CYAN}GitPilot${NC}"
-        echo "${BOLD}v.0.2.3${NC}"
+        echo "${CYAN}GitPilot${NC}🧑🏼‍✈️"
+        echo "${BOLD}v.0.2.4${NC}"
         echo "${YELLOW}JAP plugin${NC}"
     fi
     
@@ -39,12 +39,12 @@ gitpilot() {
         echo "${changed_files}"
 
         if [ -f "$GP" ]; then
-            ignore_list=$(cat "$GP" | sed -n '/"ignore": \[/,/\]/p' | grep -v '"ignore"' | tr -d '[]," ' | xargs)
+            ignore_list=$(jq -r '.ignore[]' "$GP" | xargs)
             for ignore_item in $ignore_list; do
                 changed_files=$(echo "$changed_files" | grep -v "$ignore_item")
             done
             
-            extra_list=$(cat "$GP" | sed -n '/"extra": \[/,/\]/p' | grep -v '"extra"' | tr -d '[]," ' | xargs)
+            extra_list=$(jq -r '.extra[]' "$GP" | xargs)
             current_path="$(pwd)"
             if [[ ! $extra_list == "" ]]; then
             for extra_item in $extra_list; do
@@ -77,7 +77,7 @@ gitpilot() {
             rm -r $target_folder
         fi
         
-        extra_list=$(cat "$GP" | sed -n '/"extra": \[/,/\]/p' | grep -v '"extra"' | tr -d '[]," ' | xargs)
+        extra_list=$(jq -r '.extra[]' "$GP" | xargs)
         current_path="$(pwd)"
         echo $extra_list
         echo "---"
@@ -98,7 +98,6 @@ gitpilot() {
         echo "${GREEN}Everything was provided${NC}"
 
     fi
-
     if [[ "$1" == "push" || "$1" == "push-all" ]]; then
         if ! gitpilot_check; then
             return 1
@@ -109,15 +108,14 @@ gitpilot() {
             gitpilot dep-all "$2"
         else
             gitpilot dep "$2"
-
         fi
 
         echo "${BLUE}reading gp.json${NC}"
         
-        username=$(cat "$(pwd)/.gitpilot/gp.json" | grep '"username"' | awk -F ': *' '{print $2}' | tr -d '," ')
-        server_ip=$(cat "$(pwd)/.gitpilot/gp.json" | grep '"server_ip"' | awk -F ': *' '{print $2}' | tr -d '," ')
-        target_directory_on_server=$(cat "$(pwd)/.gitpilot/gp.json" | grep '"target_directory_on_server"' | awk -F ': *' '{print $2}' | tr -d '," ')
-        ssh_password=$(cat "$(pwd)/.gitpilot/gp.json" | grep '"ssh_password"' | awk -F ': *' '{print $2}' | tr -d '," ')
+        username=$(jq -r '.username' "$(pwd)/.gitpilot/gp.json")
+        server_ip=$(jq -r '.server_ip' "$(pwd)/.gitpilot/gp.json")
+        target_directory_on_server=$(jq -r '.target_directory_on_server' "$(pwd)/.gitpilot/gp.json")
+        ssh_password=$(jq -r '.ssh_password' "$(pwd)/.gitpilot/gp.json")
 
         echo "${BOLD}push on server ...${NC}"
         sshpass -p "$ssh_password" scp -r "$local_folder"* "$username"@"$server_ip":"$target_directory_on_server"
