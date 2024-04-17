@@ -15,8 +15,8 @@ gitpilot() {
     local_folder="/Users/$USER/gitpilot/$2/"
     
     if [[ "$1" == "v" || "$1" == "-v" ]]; then
-        echo "${CYAN}GitPilot${NC}🧑🏼‍✈️"
-        echo "${BOLD}v.0.2.4${NC}"
+        echo "${CYAN}GitPilot${NC}"
+        echo "${BOLD}v.0.2.5${NC}"
         echo "${YELLOW}JAP plugin${NC}"
     fi
     
