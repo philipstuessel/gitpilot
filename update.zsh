@@ -1,2 +1,2 @@
 source ~/.zshrc
-fetch ~/jap/plugins/packages/ ~/jap/plugins/packages/gitpilot.zsh https://raw.githubusercontent.com/philipstuessel/gitpilot/main/gitpilot.zsh
+fetch2 ${JAP_FOLDER}plugins/packages/gitpilot/ https://raw.githubusercontent.com/philipstuessel/gitpilot/main/gitpilot.zsh
